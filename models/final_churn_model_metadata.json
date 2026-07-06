@@ -1,0 +1,35 @@
+{
+  "model_name": "Random Forest",
+  "random_state": 57,
+  "test_size_ratio": 0.2,
+  "best_hyperparameters": {
+    "bootstrap": true,
+    "ccp_alpha": 0.0,
+    "class_weight": null,
+    "criterion": "gini",
+    "max_depth": 16,
+    "max_features": "sqrt",
+    "max_leaf_nodes": null,
+    "max_samples": null,
+    "min_impurity_decrease": 0.0,
+    "min_samples_leaf": 1,
+    "min_samples_split": 16,
+    "min_weight_fraction_leaf": 0.0,
+    "monotonic_cst": null,
+    "n_estimators": 150,
+    "n_jobs": null,
+    "oob_score": false,
+    "random_state": 57,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "metrics": {
+    "accuracy": 0.75,
+    "precision": 0.6847826086956522,
+    "recall": 0.5779816513761468,
+    "f1_score": 0.6268656716417911,
+    "roc_auc": 0.778567654546328,
+    "mcc": 0.444494119101796
+  },
+  "feature_count": 15
+}
