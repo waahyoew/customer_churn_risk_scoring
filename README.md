@@ -1,6 +1,46 @@
-# Churn Prediction Pipeline — Production-Ready MLOps System
+# Customer Churn Risk Scoring Prediction System
 
-> **Transformasi dari notebook eksperimen menjadi production-grade ML system dengan REST API real-time, monitoring dashboard, dan automated testing.**
+> **Sistem prediksi risiko churn pelanggan berbasis Random Forest berdasarkan profil pelanggan yang dilengkapi dashboard monitoring, logging prediksi, validasi input (Pydantic), model integrity check, dan automated testing.**
+
+---
+
+## 📖 Business Understanding
+The company is experiencing a decline in the number of subscribers. A churn prediction model is needed to identify customers who are likely to cancel their subscriptions so that follow-up efforts can be more effective and targeted.
+
+## 📊 Data Understanding & Preparation
+- **Shape:** 1500 baris, 10 kolom
+- **Kolom:** `ID_Customer`, `Jenis_kelamin`, `umur`, `membership_program`, `using_reward`, `pembayaran`, `Subscribe_brochure`, `harga_per_bulan`, `jumlah_harga_langganan`, `churn`
+- **Target:** Kolom target = `churn`, mapping (`no`=0, `yes`=1)
+- **Distribusi Data:**
+  - Data Mentah: No Churn = 956, Churn = 544
+  - Training Data: No Churn = 63.75%, Churn = 36.25%
+
+## 🤖 Modelling
+- **Tech Stack:** Python 3.11+, FastAPI, Uvicorn, scikit-learn, pandas, numpy, joblib, Pydantic v2, pydantic-settings, pytest, httpx, openpyxl, HTML dashboard, JSONL logs, `.env` configuration.
+- **Algorithm & Pipeline:**
+  - **Random Forest Classifier:** Model kandidat utama dan model terpilih.
+  - **Decision Tree Classifier:** Model kandidat baseline tree-based.
+  - **GridSearchCV + StratifiedKFold:** Hyperparameter tuning dan validasi silang (cross-validation).
+  - **ColumnTransformer:** Preprocessing numerik/kategorikal.
+  - **SimpleImputer:** Imputasi median/mode untuk *missing values*.
+  - **OneHotEncoder:** Encoding fitur kategorikal.
+  - **Train-test split stratified:** Menjaga distribusi kelas agar seimbang.
+
+## 📈 Result
+- Model menggunakan 15 fitur hasil preprocessing.
+- **Training class distribution:** No Churn 63.75%, Churn 36.25%.
+- **Accuracy (75%):** Menunjukkan performa klasifikasi cukup baik secara umum.
+- **ROC-AUC (0.7786):** Menunjukkan model cukup mampu membedakan pelanggan churn vs non-churn.
+- **Recall (0.5780):** Menunjukkan masih ada *churner* yang kemungkinan tidak terdeteksi.
+- **Precision (0.6848):** Prediksi churn cukup moderat, tapi belum sangat tinggi.
+- **F1-score (0.6269):** Cocok sebagai metrik utama karena dataset tidak sepenuhnya seimbang.
+
+## 💡 Business Insight & Impact
+- Pelanggan dapat dikategorikan sebagai "Churn" atau "No Churn".
+- Sistem mengembalikan nilai *confidence* dan probabilitas untuk tiap kelas.
+- Distribusi prediksi bisa dipantau secara real-time lewat endpoint `/metrics`.
+- *Drift detection* memberi indikasi peringatan jika distribusi prediksi menyimpang dari baseline saat training.
+- Monitoring terus menjaga kualitas model, serta tersedia *logging* lengkap untuk kebutuhan audit dan *retraining*.
 
 ---
 
@@ -325,16 +365,7 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
 
 ---
 
-## 📊 Model Information
-
-- **Algorithm:** Decision Tree / Random Forest (auto-selected via GridSearchCV)
-- **Scoring Metric:** F1 Score (balanced for imbalanced churn data)
-- **Cross-Validation:** Stratified K-Fold (k=5)
-- **Features:** 8 input features (numeric + categorical)
-- **Target:** Binary classification (0 = No Churn, 1 = Churn)
-- **Split:** 80% train / 20% test, stratified, random_state=57
-
-### Feature List
+## 📝 Feature List
 
 | Feature | Type | Description |
 |---------|------|-------------|
