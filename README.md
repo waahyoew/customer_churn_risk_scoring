@@ -7,7 +7,7 @@
 
 **Random Forest-based customer churn prediction system with monitoring dashboard, prediction logging, input validation (Pydantic), model integrity check, and automated testing.**
 
-**Demo:** Not Applicable · **Documentation:** http://localhost:8000/docs
+**Demo:** Not Applicable · **Documentation:** http://localhost:8000/docs ·
 
 ------------------------------------------------------------------------
 
@@ -63,11 +63,11 @@ The company is experiencing a decline in active subscribers. A predictive classi
 
 ### Problems & Solutions
 
-  Problem         Solution
-  --------------- ----------------
-  Unexpected decline in customer retention.   Real-time churn prediction to detect early warning signs of customer dissatisfaction.
-  Deployed model degradation due to shifting customer behavior/data patterns.   Automated data drift detection comparing real-time prediction distribution against training baseline.
-  Risk of model tampering or corruption in the production environment.   SHA-256 checksum validation of the model file during API initialization.
+| Problem | Solution |
+|---|---|
+| Unexpected decline in customer retention. | Real-time churn prediction to detect early warning signs of customer dissatisfaction. |
+| Deployed model degradation due to shifting customer behavior/data patterns. | Automated data drift detection comparing real-time prediction distribution against training baseline. |
+| Risk of model tampering or corruption in the production environment. | SHA-256 checksum validation of the model file during API initialization. |
 
 ### Success Metrics (KPI)
 
@@ -89,14 +89,14 @@ The company is experiencing a decline in active subscribers. A predictive classi
 
 ## 🛠 Tech Stack
 
-  Layer      Technology     Purpose
-  ---------- -------------- ----------------------
-  Frontend   HTML, CSS, JS   Visually present monitoring metrics, prediction distributions, data drift alerts, and system health in real-time.
-  Backend    FastAPI, Uvicorn    Provides a high-performance, asynchronous REST API for model inference, health check, and metrics aggregation.
-  Database   JSONL (logs/predictions.jsonl)   Storage for buffered local prediction logs used for metrics computation and audit trails.
-  AI / ML    scikit-learn, pandas, numpy, joblib   Training pipeline orchestration (GridSearchCV), data preprocessing (ColumnTransformer, OneHotEncoder, SimpleImputer), model training (Random Forest), and serialization.
-  Cloud      Not Applicable      Not Applicable
-  DevOps     pytest, httpx, python-dotenv      Automated unit and integration testing of the API, configuration management via .env.
+| Layer | Technology | Purpose |
+|---|---|---|
+| Frontend | HTML, CSS, JS | Visually present monitoring metrics, prediction distributions, data drift alerts, and system health in real-time. |
+| Backend | FastAPI, Uvicorn | Provides a high-performance, asynchronous REST API for model inference, health check, and metrics aggregation. |
+| Database | JSONL (logs/predictions.jsonl) | Storage for buffered local prediction logs used for metrics computation and audit trails. |
+| AI / ML | scikit-learn, pandas, numpy, joblib | Training pipeline orchestration (GridSearchCV), data preprocessing (ColumnTransformer, OneHotEncoder, SimpleImputer), model training (Random Forest), and serialization. |
+| Cloud | Not Applicable | Not Applicable |
+| DevOps | pytest, httpx, python-dotenv | Automated unit and integration testing of the API, configuration management via .env. |
 
 ------------------------------------------------------------------------
 
@@ -155,7 +155,8 @@ customer_churn_risk_scoring/
 ├── main.py                     ← Legacy entry point
 ├── train.py                    ← Standalone training CLI script
 ├── requirements.txt            ← Python dependencies list
-└── README.md                   ← Project documentation (Indonesian)
+├── README.md                   ← Project documentation (English)
+└── README_IDN.md               ← Project documentation (Indonesian)
 ```
 
 ------------------------------------------------------------------------
@@ -192,9 +193,12 @@ CHURN_SCORING_METRIC=f1
 
 ## 📡 API
 
-  Method       Endpoint       Description
-  ------------ -------------- -----------------
-  POST <br> GET <br> GET <br> GET   /predict <br> /health <br> /metrics <br> /docs   Predict customer churn risk <br> Check system health and uptime <br> Retrieve MLOps statistics (API Key required) <br> Interactive Swagger UI docs
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /predict | Predict customer churn risk |
+| GET | /health | Check system health and uptime |
+| GET | /metrics | Retrieve MLOps statistics (API Key required) |
+| GET | /docs | Interactive Swagger UI docs |
 
 ------------------------------------------------------------------------
 
@@ -220,9 +224,7 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 python train.py
-```
 
-``` bash
 # Run API server (Terminal 1)
 uvicorn app.main:app --reload
 
@@ -273,26 +275,26 @@ pytest tests/test_api.py -k "test_metrics_without_api_key" -v
 
 ## 📈 Metrics
 
-  Metric          Target
-  --------------- ------------------
-  Availability    99.9%
-  Response Time   < 100ms
-  Throughput      100 RPS
-  Accuracy        75.0%
+| Metric | Target |
+|---|---|
+| Availability | 99.9% |
+| Response Time | < 100ms |
+| Throughput | 100 RPS |
+| Accuracy | 75.0% |
 
 ------------------------------------------------------------------------
 
 ## 🤖 AI Components
 
-  Component         Value
-  ----------------- ----------------
-  Model             Random Forest Classifier
-  Embedding         Not Applicable
-  Vector Database   Not Applicable
-  RAG               Not Applicable
-  Agent             Not Applicable
-  Prompting         Not Applicable
-  Evaluation        Stratified K-Fold CV (F1-score & ROC-AUC)
+| Component | Value |
+|---|---|
+| Model | Random Forest Classifier |
+| Embedding | Not Applicable |
+| Vector Database | Not Applicable |
+| RAG | Not Applicable |
+| Agent | Not Applicable |
+| Prompting | Not Applicable |
+| Evaluation | Stratified K-Fold CV (F1-score & ROC-AUC) |
 
 ------------------------------------------------------------------------
 
@@ -307,11 +309,11 @@ pytest tests/test_api.py -k "test_metrics_without_api_key" -v
 
 ## 🚀 Deployment
 
-  Environment   Target
-  ------------- --------------------
-  Development   Local Machine (FastAPI + Uvicorn)
-  Staging       Not Applicable
-  Production    GCP / AWS / Docker Container
+| Environment | Target |
+|---|---|
+| Development | Local Machine (FastAPI + Uvicorn) |
+| Staging | Not Applicable |
+| Production | GCP / AWS / Docker Container |
 
 ------------------------------------------------------------------------
 
