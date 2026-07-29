@@ -1,10 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Churn Prediction - Monitoring Dashboard</title>
+    <title>Customer Churn Risk Scoring & MLOps Monitoring</title>
+    <!-- Google Fonts: Inter for clean typography, Fira Code for metrics & numbers -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-bg: #0f172a;
+            --color-surface: #1e293b;
+            --color-surface-raised: #263347;
+            --color-border: #334155;
+            --color-border-hover: #475569;
+            --color-primary: #3b82f6;
+            --color-primary-hover: #2563eb;
+            --color-accent: #f59e0b;
+            --color-success: #10b981;
+            --color-danger: #f43f5e;
+            --color-text: #f8fafc;
+            --color-text-muted: #94a3b8;
+            --color-text-dim: #64748b;
+            
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            --transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,375 +41,994 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
+            font-family: var(--font-body);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            padding: 24px;
             min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
         }
 
+        /* ── Header ────────────────────────────────────────────── */
         header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 24px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--color-primary), #1d4ed8);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--color-text);
         }
 
         .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.9;
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
         }
 
-        .dashboard {
+        .system-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--color-border);
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-text-dim);
+            transition: var(--transition);
+        }
+
+        .status-dot.status-ok {
+            background-color: var(--color-success);
+            box-shadow: 0 0 10px var(--color-success);
+            animation: pulse-glow 2s infinite;
+        }
+
+        .status-dot.status-degraded {
+            background-color: var(--color-accent);
+        }
+
+        .status-dot.status-error {
+            background-color: var(--color-danger);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Alert & Banners ────────────────────────────────────── */
+        .banner {
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+            font-size: 0.9rem;
+            display: none;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .banner.show {
+            display: flex;
+        }
+
+        .banner-danger {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fecdd3;
+        }
+
+        .banner-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fef3c7;
+        }
+
+        /* ── Layout Grid ───────────────────────────────────────── */
+        .layout-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
         }
 
-        .card {
-            background: white;
-            border-radius: 12px;
+        @media (max-width: 960px) {
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
             padding: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
+            box-shadow: var(--shadow-card);
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card-header {
+        .panel-header {
             display: flex;
             align-items: center;
-            margin-bottom: 15px;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .card-icon {
-            font-size: 2rem;
-            margin-right: 15px;
-        }
-
-        .card-title {
-            font-size: 1.2rem;
-            color: #333;
+        .panel-title {
+            font-size: 1.1rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--color-text);
         }
 
-        .card-value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 5px;
+        .panel-title svg {
+            color: var(--color-primary);
         }
 
-        .card-label {
-            color: #666;
-            font-size: 0.9rem;
+        /* ── Left Column: Metrics & Monitoring ─────────────────── */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
         }
 
-        .status-indicator {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .metric-card {
+            background: var(--color-surface-raised);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 16px;
         }
 
-        .status-ok {
-            background-color: #10b981;
-            animation: pulse 2s infinite;
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
-        .status-degraded {
-            background-color: #f59e0b;
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text);
         }
 
-        .status-error {
-            background-color: #ef4444;
+        .metric-subtext {
+            font-size: 0.75rem;
+            color: var(--color-text-dim);
+            margin-top: 4px;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .chart-card {
+            background: var(--color-surface-raised);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 16px;
         }
 
-        .distribution-chart {
-            margin-top: 20px;
+        .bar-group {
+            margin-top: 14px;
         }
 
-        .bar-container {
-            margin-bottom: 12px;
-        }
-
-        .bar-label {
+        .bar-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
         }
 
-        .bar {
-            height: 30px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            border-radius: 5px;
-            transition: width 0.5s ease;
+        .bar-header span:first-child {
+            color: var(--color-text-muted);
+        }
+
+        .bar-header span:last-child {
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        .bar-track {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .bar-fill-no-churn {
+            background: linear-gradient(90deg, #059669, var(--color-success));
+        }
+
+        .bar-fill-churn {
+            background: linear-gradient(90deg, #e11d48, var(--color-danger));
+        }
+
+        /* ── Right Column: Interactive Prediction Form ─────────── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 580px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 580px) {
+            .form-group.full-width {
+                grid-column: span 1;
+            }
+        }
+
+        label {
+            font-size: 0.825rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        label .unit {
+            color: var(--color-text-dim);
+            font-size: 0.75rem;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            background: var(--color-surface-raised);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            color: var(--color-text);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        input[aria-invalid="true"],
+        select[aria-invalid="true"] {
+            border-color: var(--color-danger);
+        }
+
+        .field-error {
+            font-size: 0.75rem;
+            color: var(--color-danger);
+            min-height: 18px;
+        }
+
+        .btn-submit {
+            grid-column: span 2;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--color-primary), #2563eb);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-family: var(--font-body);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            padding: 0 10px;
-            color: white;
-            font-weight: 600;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
         }
 
-        .alert {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        @media (max-width: 580px) {
+            .btn-submit {
+                grid-column: span 1;
+            }
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
             display: none;
         }
 
-        .alert.show {
-            display: block;
+        .btn-submit.loading .spinner {
+            display: inline-block;
         }
 
-        .alert-title {
-            font-weight: 600;
-            color: #92400e;
-            margin-bottom: 5px;
-        }
-
-        .alert-message {
-            color: #78350f;
-            font-size: 0.9rem;
-        }
-
-        .refresh-info {
-            text-align: center;
-            color: white;
-            font-size: 0.9rem;
+        .btn-submit.loading .btn-text {
             opacity: 0.8;
-            margin-top: 20px;
         }
 
-        .timestamp {
-            font-size: 0.85rem;
-            color: #999;
-            margin-top: 10px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .error-message {
-            background: #fee2e2;
-            border: 1px solid #ef4444;
-            color: #991b1b;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        /* ── Prediction Result Display ─────────────────────────── */
+        .result-panel {
+            margin-top: 24px;
+            background: var(--color-surface-raised);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
             display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .result-panel.visible {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Scanning Animation Overlay */
+        .scanning-container {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .scanning-text {
+            font-size: 0.875rem;
+            color: var(--color-text-muted);
+            margin-bottom: 12px;
+            font-family: var(--font-mono);
+        }
+
+        .scanning-bar-track {
+            height: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 3px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .scanning-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+        }
+
+        @keyframes scan {
+            0% { width: 0%; }
+            50% { width: 70%; }
+            100% { width: 100%; }
+        }
+
+        .result-content {
+            display: none;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.02em;
+        }
+
+        .result-badge.badge-no-churn {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--color-success);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .result-badge.badge-churn {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--color-danger);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+        }
+
+        .result-confidence-box {
+            text-align: right;
+        }
+
+        .confidence-label {
+            font-size: 0.75rem;
+            color: var(--color-text-dim);
+            text-transform: uppercase;
+        }
+
+        .confidence-val {
+            font-family: var(--font-mono);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .prob-breakdown {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .prob-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .prob-title {
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            margin-bottom: 4px;
+        }
+
+        .prob-num {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .footer-note {
+            text-align: center;
+            color: var(--color-text-dim);
+            font-size: 0.8rem;
+            margin-top: 32px;
+            padding-top: 16px;
+            border-top: 1px solid var(--color-border);
         }
     </style>
 </head>
 <body>
+
     <div class="container">
+        <!-- Header -->
         <header>
-            <h1>🎯 Churn Prediction Dashboard</h1>
-            <p class="subtitle">Real-time Model Performance & Monitoring</p>
+            <div class="brand-title">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Customer Churn Risk Scoring</h1>
+                    <p class="subtitle">Production ML Pipeline & Monitoring System</p>
+                </div>
+            </div>
+            <div class="system-badge">
+                <span id="statusDot" class="status-dot"></span>
+                <span id="statusText">Checking status...</span>
+            </div>
         </header>
 
-        <div id="errorMessage" class="error-message"></div>
-        <div id="driftAlert" class="alert">
-            <div class="alert-title">⚠️ Data Drift Detected</div>
-            <div class="alert-message">Current prediction distribution has deviated significantly from training baseline. Model retraining may be required.</div>
+        <!-- Global Banners -->
+        <div id="errorBanner" class="banner banner-danger">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div id="errorMessage">Gagal terhubung ke API server di http://localhost:8000. Pastikan Uvicorn server berjalan.</div>
         </div>
 
-        <div class="dashboard">
-            <!-- Health Status Card -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-icon">💚</span>
-                    <span class="card-title">System Health</span>
-                </div>
-                <div class="card-value" id="healthStatus">
-                    <span class="status-indicator status-ok"></span>
-                    <span id="statusText">Loading...</span>
-                </div>
-                <div class="card-label">Model Status: <span id="modelLoaded">-</span></div>
-                <div class="card-label">Version: <span id="modelVersion">-</span></div>
-                <div class="card-label">Uptime: <span id="uptime">-</span></div>
-            </div>
-
-            <!-- Total Requests Card -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-icon">📊</span>
-                    <span class="card-title">Total Predictions</span>
-                </div>
-                <div class="card-value" id="totalRequests">0</div>
-                <div class="card-label">Since last restart</div>
-                <div class="timestamp" id="lastRequestTime">-</div>
-            </div>
-
-            <!-- Average Confidence Card -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-icon">🎯</span>
-                    <span class="card-title">Avg. Confidence</span>
-                </div>
-                <div class="card-value" id="avgConfidence">0.00</div>
-                <div class="card-label">Model certainty score</div>
-            </div>
+        <div id="driftBanner" class="banner banner-warning">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><strong>Warning: Data Drift Terdeteksi!</strong> Distribusi prediksi menyimpang dari baseline training (>25%). Pertimbangkan retraining model.</div>
         </div>
 
-        <!-- Prediction Distribution Card -->
-        <div class="card">
-            <div class="card-header">
-                <span class="card-icon">📈</span>
-                <span class="card-title">Prediction Distribution</span>
-            </div>
-            <div class="distribution-chart">
-                <div class="bar-container">
-                    <div class="bar-label">
-                        <span>No Churn (0)</span>
-                        <span id="noChurnCount">0</span>
+        <!-- Layout Grid -->
+        <div class="layout-grid">
+
+            <!-- LEFT COLUMN: MLOps Monitoring Dashboard -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Monitoring Metrics
                     </div>
-                    <div class="bar" id="noChurnBar" style="width: 0%;">0%</div>
+                    <span style="font-size: 0.75rem; color: var(--color-text-dim);">Auto-refresh 5s</span>
                 </div>
-                <div class="bar-container">
-                    <div class="bar-label">
-                        <span>Churn (1)</span>
-                        <span id="churnCount">0</span>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Total Predictions</div>
+                        <div class="metric-value" id="totalRequests">0</div>
+                        <div class="metric-subtext" id="lastRequestTime">Belum ada request</div>
                     </div>
-                    <div class="bar" id="churnBar" style="width: 0%;">0%</div>
+                    <div class="metric-card">
+                        <div class="metric-label">Avg. Confidence</div>
+                        <div class="metric-value" id="avgConfidence">0.0%</div>
+                        <div class="metric-subtext">Model certainty score</div>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="metric-label" style="margin-bottom: 12px;">Distribusi Prediksi Churn</div>
+                    
+                    <div class="bar-group">
+                        <div class="bar-header">
+                            <span>No Churn (0)</span>
+                            <span id="noChurnCount">0 (0.0%)</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill bar-fill-no-churn" id="noChurnBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="bar-group">
+                        <div class="bar-header">
+                            <span>Churn (1)</span>
+                            <span id="churnCount">0 (0.0%)</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill bar-fill-churn" id="churnBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 16px; font-size: 0.8rem; color: var(--color-text-dim); display: flex; justify-content: space-between;">
+                    <span>Model Version: <strong id="modelVersion" style="color: var(--color-text-muted); font-family: var(--font-mono);">-</strong></span>
+                    <span>Uptime: <strong id="uptime" style="color: var(--color-text-muted); font-family: var(--font-mono);">-</strong></span>
                 </div>
             </div>
-        </div>
 
-        <div class="refresh-info">
-            ⟳ Auto-refreshing every 5 seconds
+            <!-- RIGHT COLUMN: Interactive Prediction Form -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="M13 8h5"/><path d="M13 12h5"/><path d="M13 16h5"/></svg>
+                        Simulasi Risk Scoring Pelanggan
+                    </div>
+                </div>
+
+                <form id="predictForm" class="form-grid" novalidate>
+                    <!-- 1. Jenis Kelamin -->
+                    <div class="form-group">
+                        <label for="jenis_kelamin">Jenis Kelamin</label>
+                        <select id="jenis_kelamin" name="Jenis_kelamin" required>
+                            <option value="" disabled selected>Pilih jenis kelamin</option>
+                            <option value="Laki-laki">Laki-laki</option>
+                            <option value="Perempuan">Perempuan</option>
+                        </select>
+                        <span class="field-error" id="err_jenis_kelamin"></span>
+                    </div>
+
+                    <!-- 2. Umur -->
+                    <div class="form-group">
+                        <label for="umur">Umur <span class="unit">tahun</span></label>
+                        <input type="number" id="umur" name="umur" min="0" max="120" placeholder="misal: 31" required>
+                        <span class="field-error" id="err_umur"></span>
+                    </div>
+
+                    <!-- 3. Membership Program -->
+                    <div class="form-group">
+                        <label for="membership_program">Lama Membership <span class="unit">bulan</span></label>
+                        <input type="number" id="membership_program" name="membership_program" min="0" placeholder="misal: 12" required>
+                        <span class="field-error" id="err_membership_program"></span>
+                    </div>
+
+                    <!-- 4. Using Reward -->
+                    <div class="form-group">
+                        <label for="using_reward">Menggunakan Reward</label>
+                        <select id="using_reward" name="using_reward" required>
+                            <option value="" disabled selected>Pilih opsi</option>
+                            <option value="Yes">Yes (Ya)</option>
+                            <option value="No">No (Tidak)</option>
+                        </select>
+                        <span class="field-error" id="err_using_reward"></span>
+                    </div>
+
+                    <!-- 5. Pembayaran -->
+                    <div class="form-group">
+                        <label for="pembayaran">Metode Pembayaran</label>
+                        <select id="pembayaran" name="pembayaran" required>
+                            <option value="" disabled selected>Pilih pembayaran</option>
+                            <option value="Credit Card">Credit Card</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="E-Wallet">E-Wallet</option>
+                            <option value="Direct Debit">Direct Debit</option>
+                        </select>
+                        <span class="field-error" id="err_pembayaran"></span>
+                    </div>
+
+                    <!-- 6. Subscribe Brochure -->
+                    <div class="form-group">
+                        <label for="subscribe_brochure">Subscribe Brosur</label>
+                        <select id="subscribe_brochure" name="Subscribe_brochure" required>
+                            <option value="" disabled selected>Pilih kanal</option>
+                            <option value="Email">Email</option>
+                            <option value="SMS">SMS</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                        </select>
+                        <span class="field-error" id="err_subscribe_brochure"></span>
+                    </div>
+
+                    <!-- 7. Harga per Bulan -->
+                    <div class="form-group">
+                        <label for="harga_per_bulan">Harga per Bulan <span class="unit">Rp</span></label>
+                        <input type="number" id="harga_per_bulan" name="harga_per_bulan" min="1" step="1000" placeholder="misal: 50000" required>
+                        <span class="field-error" id="err_harga_per_bulan"></span>
+                    </div>
+
+                    <!-- 8. Jumlah Harga Langganan -->
+                    <div class="form-group">
+                        <label for="jumlah_harga_langganan">Total Langganan <span class="unit">Rp</span></label>
+                        <input type="number" id="jumlah_harga_langganan" name="jumlah_harga_langganan" min="0" step="1000" placeholder="misal: 600000" required>
+                        <span class="field-error" id="err_jumlah_harga_langganan"></span>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="btnSubmit" class="btn-submit">
+                        <span class="spinner"></span>
+                        <span class="btn-text">Hitung Risiko Churn</span>
+                    </button>
+                </form>
+
+                <!-- Result Panel -->
+                <div id="resultPanel" class="result-panel">
+                    <!-- Scanning state -->
+                    <div id="scanningContainer" class="scanning-container">
+                        <div class="scanning-text">Analyzing customer profile features...</div>
+                        <div class="scanning-bar-track">
+                            <div id="scanBarFill" class="scanning-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Actual Result Content -->
+                    <div id="resultContent" class="result-content">
+                        <div class="result-header">
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--color-text-dim); text-transform: uppercase; margin-bottom: 4px;">Hasil Prediksi Model</div>
+                                <div id="resultBadge" class="result-badge badge-no-churn">No Churn</div>
+                            </div>
+                            <div class="result-confidence-box">
+                                <div class="confidence-label">Confidence Score</div>
+                                <div id="resultConfidence" class="confidence-val">0.0%</div>
+                            </div>
+                        </div>
+
+                        <div class="prob-breakdown">
+                            <div class="prob-item">
+                                <div class="prob-title">Probabilitas No Churn</div>
+                                <div id="probNoChurn" class="prob-num" style="color: var(--color-success);">0.0%</div>
+                            </div>
+                            <div class="prob-item">
+                                <div class="prob-title">Probabilitas Churn</div>
+                                <div id="probChurn" class="prob-num" style="color: var(--color-danger);">0.0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- /layout-grid -->
+
+        <div class="footer-note">
+            Customer Churn Risk Scoring Dashboard &bull; FastAPI + Scikit-Learn Engine
         </div>
     </div>
 
+    <!-- Script Logic -->
     <script>
         const API_BASE_URL = 'http://localhost:8000';
         const API_KEY = 'dev-key-change-in-production';
-        
+
+        // ── Validation Helpers ─────────────────────────────────────
+        function validateField(field) {
+            const errEl = document.getElementById(`err_${field.id}`);
+            if (!errEl) return true;
+
+            let errorMsg = '';
+            const val = field.value.trim();
+
+            if (!val || val === '') {
+                errorMsg = 'Wajib diisi';
+            } else if (field.type === 'number') {
+                const numVal = Number(val);
+                if (isNaN(numVal)) {
+                    errorMsg = 'Harus angka';
+                } else if (field.min !== '' && numVal < Number(field.min)) {
+                    errorMsg = `Minimal ${field.min}`;
+                } else if (field.max !== '' && numVal > Number(field.max)) {
+                    errorMsg = `Maksimal ${field.max}`;
+                }
+            }
+
+            errEl.textContent = errorMsg;
+            if (errorMsg) {
+                field.setAttribute('aria-invalid', 'true');
+                return false;
+            } else {
+                field.removeAttribute('aria-invalid');
+                return true;
+            }
+        }
+
+        // Attach on-blur validation to all form fields
+        document.querySelectorAll('#predictForm input, #predictForm select').forEach(element => {
+            element.addEventListener('blur', () => validateField(element));
+            element.addEventListener('input', () => {
+                if (element.getAttribute('aria-invalid') === 'true') {
+                    validateField(element);
+                }
+            });
+        });
+
+        // ── Form Payload Construction ──────────────────────────────
+        function getPayload() {
+            return {
+                Jenis_kelamin: document.getElementById('jenis_kelamin').value,
+                umur: parseInt(document.getElementById('umur').value, 10),
+                membership_program: parseInt(document.getElementById('membership_program').value, 10),
+                using_reward: document.getElementById('using_reward').value,
+                pembayaran: document.getElementById('pembayaran').value,
+                Subscribe_brochure: document.getElementById('subscribe_brochure').value,
+                harga_per_bulan: parseInt(document.getElementById('harga_per_bulan').value, 10),
+                jumlah_harga_langganan: parseInt(document.getElementById('jumlah_harga_langganan').value, 10)
+            };
+        }
+
+        // ── Render Prediction Result ───────────────────────────────
+        function showResult(data) {
+            const panel = document.getElementById('resultPanel');
+            const scanningContainer = document.getElementById('scanningContainer');
+            const scanBarFill = document.getElementById('scanBarFill');
+            const resultContent = document.getElementById('resultContent');
+
+            // Show panel & start scanning animation
+            panel.classList.add('visible');
+            scanningContainer.style.display = 'block';
+            resultContent.style.display = 'none';
+
+            scanBarFill.style.animation = 'none';
+            // Trigger reflow
+            void scanBarFill.offsetWidth;
+            scanBarFill.style.animation = 'scan 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards';
+
+            // Reveal after scan finishes
+            setTimeout(() => {
+                scanningContainer.style.display = 'none';
+                resultContent.style.display = 'block';
+
+                const isChurn = data.churn_prediction === 1;
+                const badge = document.getElementById('resultBadge');
+                
+                if (isChurn) {
+                    badge.className = 'result-badge badge-churn';
+                    badge.textContent = '⚠️ Risk Churn: CHURN';
+                } else {
+                    badge.className = 'result-badge badge-no-churn';
+                    badge.textContent = '✅ Risk Churn: NO CHURN';
+                }
+
+                document.getElementById('resultConfidence').textContent = (data.confidence * 100).toFixed(1) + '%';
+                
+                const probNoChurn = ((data.probabilities['0'] || 0) * 100).toFixed(1);
+                const probChurn = ((data.probabilities['1'] || 0) * 100).toFixed(1);
+
+                document.getElementById('probNoChurn').textContent = probNoChurn + '%';
+                document.getElementById('probChurn').textContent = probChurn + '%';
+
+                // Instantly update metrics to reflect new prediction
+                fetchMetrics();
+
+            }, 1250);
+        }
+
+        // ── Submit Handler ─────────────────────────────────────────
+        document.getElementById('predictForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fields = this.querySelectorAll('input, select');
+            let isFormValid = true;
+
+            fields.forEach(field => {
+                if (!validateField(field)) {
+                    isFormValid = false;
+                }
+            });
+
+            if (!isFormValid) return;
+
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.classList.add('loading');
+
+            try {
+                const payload = getPayload();
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.detail || `Server error (status ${response.status})`);
+                }
+
+                const result = await response.json();
+                showResult(result);
+
+            } catch (err) {
+                alert(`Error Prediksi: ${err.message}`);
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        });
+
+        // ── Monitoring API Calls ───────────────────────────────────
         async function fetchHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/health`);
                 const data = await response.json();
-                
-                // Update health status
-                const statusIndicator = document.querySelector('.status-indicator');
+
+                const dot = document.getElementById('statusDot');
                 const statusText = document.getElementById('statusText');
-                
+
                 if (data.status === 'ok') {
-                    statusIndicator.className = 'status-indicator status-ok';
-                    statusText.textContent = 'Healthy';
+                    dot.className = 'status-dot status-ok';
+                    statusText.textContent = 'API Healthy & Model Loaded';
                 } else if (data.status === 'degraded') {
-                    statusIndicator.className = 'status-indicator status-degraded';
-                    statusText.textContent = 'Degraded';
+                    dot.className = 'status-dot status-degraded';
+                    statusText.textContent = 'API Degraded (Model Not Loaded)';
                 } else {
-                    statusIndicator.className = 'status-indicator status-error';
-                    statusText.textContent = 'Error';
+                    dot.className = 'status-dot status-error';
+                    statusText.textContent = 'API Error';
                 }
-                
-                document.getElementById('modelLoaded').textContent = data.model_loaded ? 'Loaded' : 'Not Loaded';
-                document.getElementById('modelVersion').textContent = data.model_version;
-                document.getElementById('uptime').textContent = `${Math.floor(data.uptime_seconds)}s`;
-                
-                document.getElementById('errorMessage').style.display = 'none';
-            } catch (error) {
-                document.getElementById('errorMessage').textContent = 
-                    `Cannot connect to API. Make sure the server is running at ${API_BASE_URL}`;
-                document.getElementById('errorMessage').style.display = 'block';
+
+                document.getElementById('modelVersion').textContent = data.model_version || '-';
+                document.getElementById('uptime').textContent = Math.floor(data.uptime_seconds) + 's';
+                document.getElementById('errorBanner').classList.remove('show');
+
+            } catch (err) {
+                const dot = document.getElementById('statusDot');
+                dot.className = 'status-dot status-error';
+                document.getElementById('statusText').textContent = 'API Offline';
+                document.getElementById('errorBanner').classList.add('show');
             }
         }
-        
+
         async function fetchMetrics() {
             try {
                 const response = await fetch(`${API_BASE_URL}/metrics`, {
-                    headers: {
-                        'X-API-Key': API_KEY
-                    }
+                    headers: { 'X-API-Key': API_KEY }
                 });
-                
-                if (!response.ok) {
-                    console.error('Metrics fetch failed:', response.status);
-                    return;
-                }
-                
+
+                if (!response.ok) return;
+
                 const data = await response.json();
-                
-                // Update total requests
-                document.getElementById('totalRequests').textContent = 
-                    data.total_requests.toLocaleString();
-                
-                // Update average confidence
-                document.getElementById('avgConfidence').textContent = 
-                    (data.average_confidence * 100).toFixed(2) + '%';
-                
-                // Update last request time
+
+                document.getElementById('totalRequests').textContent = data.total_requests.toLocaleString();
+                document.getElementById('avgConfidence').textContent = (data.average_confidence * 100).toFixed(1) + '%';
+
                 if (data.last_request_at) {
-                    const lastTime = new Date(data.last_request_at);
-                    document.getElementById('lastRequestTime').textContent = 
-                        `Last: ${lastTime.toLocaleString()}`;
+                    const d = new Date(data.last_request_at);
+                    document.getElementById('lastRequestTime').textContent = `Terakhir: ${d.toLocaleTimeString()}`;
                 }
-                
-                // Update distribution
+
                 const dist = data.predictions_distribution;
-                const noChurn = parseInt(dist['0'] || 0);
-                const churn = parseInt(dist['1'] || 0);
+                const noChurn = parseInt(dist['0'] || 0, 10);
+                const churn = parseInt(dist['1'] || 0, 10);
                 const total = noChurn + churn;
-                
+
                 if (total > 0) {
-                    const noChurnPct = (noChurn / total * 100).toFixed(1);
-                    const churnPct = (churn / total * 100).toFixed(1);
-                    
-                    document.getElementById('noChurnCount').textContent = noChurn;
-                    document.getElementById('churnCount').textContent = churn;
-                    
-                    const noChurnBar = document.getElementById('noChurnBar');
-                    const churnBar = document.getElementById('churnBar');
-                    
-                    noChurnBar.style.width = noChurnPct + '%';
-                    noChurnBar.textContent = noChurnPct + '%';
-                    
-                    churnBar.style.width = churnPct + '%';
-                    churnBar.textContent = churnPct + '%';
-                    
-                    // Simple drift detection (if distribution is very skewed)
+                    const noChurnPct = (noChurn / total * 100);
+                    const churnPct = (churn / total * 100);
+
+                    document.getElementById('noChurnCount').textContent = `${noChurn} (${noChurnPct.toFixed(1)}%)`;
+                    document.getElementById('churnCount').textContent = `${churn} (${churnPct.toFixed(1)}%)`;
+
+                    document.getElementById('noChurnBar').style.width = noChurnPct + '%';
+                    document.getElementById('churnBar').style.width = churnPct + '%';
+
+                    // Drift alert trigger
                     if (total >= 20 && (noChurnPct < 10 || noChurnPct > 90)) {
-                        document.getElementById('driftAlert').classList.add('show');
+                        document.getElementById('driftBanner').classList.add('show');
                     } else {
-                        document.getElementById('driftAlert').classList.remove('show');
+                        document.getElementById('driftBanner').classList.remove('show');
                     }
                 }
-                
-            } catch (error) {
-                console.error('Error fetching metrics:', error);
+
+            } catch (err) {
+                console.error('Error loading metrics:', err);
             }
         }
-        
+
         async function updateDashboard() {
             await fetchHealth();
             await fetchMetrics();
         }
-        
-        // Initial load
+
+        // Initial fetch & timer
         updateDashboard();
-        
-        // Auto-refresh every 5 seconds
         setInterval(updateDashboard, 5000);
     </script>
 </body>

@@ -1,7 +1,7 @@
 {
   "model_name": "Random Forest",
-  "model_version": "20260705_093145",
-  "trained_at": "2026-07-05T09:31:45.189341",
+  "model_version": "20260729_141537",
+  "trained_at": "2026-07-29T14:15:37.105689",
   "random_state": 57,
   "test_size_ratio": 0.2,
   "best_hyperparameters": {

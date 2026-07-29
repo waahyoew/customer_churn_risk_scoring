@@ -64,3 +64,7 @@ htmlcov/
 
 # OS
 Thumbs.db
+
+# Documentation
+README_IDN.md
+
