@@ -2,29 +2,12 @@
 
 > Random Forest-based customer churn prediction system with monitoring dashboard, prediction logging, input validation (Pydantic), model integrity check, and automated testing.
 
-::: {align="center"}
 ![Status](https://img.shields.io/badge/status-production--ready-yellow)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **Random Forest-based customer churn prediction system with monitoring dashboard, prediction logging, input validation (Pydantic), model integrity check, and automated testing.**
 
-**Demo:** Not Applicable · **Documentation:** http://localhost:8000/docs · **Issues:**
-Not Applicable
-:::
-
-------------------------------------------------------------------------
-
-# AI Generation Rules (DO NOT MODIFY)
-
-1.  Never change the section order.
-2.  Never rename headings.
-3.  Never add or remove headings.
-4.  Never change emojis.
-5.  Never change Markdown formatting.
-6.  Preserve all tables and code blocks.
-7.  Replace ONLY placeholders enclosed in {{ }}.
-8.  If information is unavailable, write `Not Applicable`.
-9.  Keep explanations concise, technical, and professional.
+**Demo:** Not Applicable · **Documentation:** http://localhost:8000/docs
 
 ------------------------------------------------------------------------
 
@@ -359,4 +342,4 @@ This project is licensed under the MIT License.
 
 -   Author: Wahyu
 -   GitHub: waahyoew
--   Email: wahyu@example.com
+-   Email: wahyuwidihansyah@gmail.com
